@@ -40,14 +40,71 @@ class MainWindow(QMainWindow):
         status.addPermanentWidget(self.sizeLabel)
         status.showMessage("Ready", 5000)
 
-        fileNewAction = QAction(QIcon("icons/filenew.png"), "&New", self)
-        fileNewAction.setShortcut(QKeySequence.New)
-        helpText = "Create new image"
-        fileNewAction.setToolTip(helpText)
-        fileNewAction.setStatusTip(helpText)
-        self.connect(fileNewAction, SIGNAL("triggered()"), self.fileNew)
-        fileMenu.addAction(fileNewAction)
-        fileToolbar.addAction(fileNewAction)
+        def createAction(self, text, slot=None, shortcut=None, icon=None,
+                         tip=None, checkable=False, signal="triggered()"):
+            action = QAction(text, self)
+            if icon is not None:
+                action.setIcon(QIcon(":/%s.png" % icon))
+            if shortcut is not None:
+                action.setShortcut(shortcut)
+            if tip is not None:
+                action.setToolTip(tip)
+                action.setStatusTip(tip)
+            if slot is not None:
+                self.connect(action, SIGNAL(signal), slot)
+            if checkable:
+                action.setCheckable(True)
+            return action
+
+        fileNewAction = self.createAction("&New", self.fileNew,
+                                          QKeySequence.New, "filenew",
+                                          "Create an image file")
+        fileQuitAction = self.createAction("&Quit", self.close, "Ctrl+Q",
+                                           "filequit", "Close the application")
+        editZoomAction = self.createAction("&Zoom...", self.editZoom, "Alt+Z",
+                                           "editzoom", "Zoom the image")
+        editInvertAction = self.createAction("&Invert", self.editInvert,
+                                             "Ctrl+I", "editinvert",
+                                             "Invert the image's colors",
+                                             True, "toggled(bool)")
+
+        mirrorGroup = QActionGroup(self)
+        editUnMirrorAction = self.createAction("&Unmirror", self.editUnMirror,
+                                               "Ctrl+U", "editunmirror",
+                                               "Unmirror the image", True,
+                                               "toggled(bool)")
+        editMirrorVertAction = self.createAction("&Mirror Vertically",
+                                                 self.editMirrorVert,
+                                                 "Ctrl+V",
+                                                 "editmirrorvert",
+                                                 "Mirror the image vertically",
+                                                 True, "toggled(bool)")
+        editMirrorHorizAction = self.createAction("&Mirror Horizontally",
+                                                  self.editMirrorHoriz,
+                                                  "Ctrl+H",
+                                                  "editmirrorhoriz",
+                                                  "Mirror the image horizontally",
+                                                  True, "toggled(bool)")
+        mirrorGroup.addAction(editUnMirrorAction)
+        mirrorGroup.addAction(editMirrorVertAction)
+        mirrorGroup.addAction(editMirrorHorizAction)
+        editUnMirrorAction.setChecked(True)
+
+        helpAboutAction = self.createAction("&About", self.helpAbout)
+        helpHelpAction = self.createAction("&Help", self.helpHelp)
+
+
+
+
+
+        # fileNewAction = QAction(QIcon("icons/filenew.png"), "&New", self)
+        # fileNewAction.setShortcut(QKeySequence.New)
+        # helpText = "Create new image"
+        # fileNewAction.setToolTip(helpText)
+        # fileNewAction.setStatusTip(helpText)
+        # self.connect(fileNewAction, SIGNAL("triggered()"), self.fileNew)
+        # fileMenu.addAction(fileNewAction)
+        # fileToolbar.addAction(fileNewAction)
 
 
 if __name__ == "__main__":
