@@ -24,6 +24,31 @@ class MainWindow(QMainWindow):
         self.imageLabel.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setCentralWidget(self.imageLabel)
 
+        logDockWidget = QDockWidget("Log", self)
+        logDockWidget.setObjectName("LogDockWidget")
+        logDockWidget.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.listWidget = QListWidget()
+        logDockWidget.setWidget(self.listWidget)
+        self.addDockWidget(Qt.RightDockWidgetArea, logDockWidget)
+
+        self.printer = None
+
+        self.sizeLabel = QLabel()
+        self.sizeLabel.setFrameStyle(QFrame.StyledPanel|QFrame.Sunken)
+        status = self.statusBar()
+        status.setSizeGripEnabled(False)
+        status.addPermanentWidget(self.sizeLabel)
+        status.showMessage("Ready", 5000)
+
+        fileNewAction = QAction(QIcon("icons/filenew.png"), "&New", self)
+        fileNewAction.setShortcut(QKeySequence.New)
+        helpText = "Create new image"
+        fileNewAction.setToolTip(helpText)
+        fileNewAction.setStatusTip(helpText)
+        self.connect(fileNewAction, SIGNAL("triggered()"), self.fileNew)
+        fileMenu.addAction(fileNewAction)
+        fileToolbar.addAction(fileNewAction)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
