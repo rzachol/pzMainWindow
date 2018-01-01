@@ -210,13 +210,56 @@ class MainWindow(QMainWindow):
         pass
 
     def updateFileMenu(self):
-        pass
+        self.fileMenu.clear()
+        self.addActions(self.fileMenu, self.fileMenuActions[:-1])
+        current = QString(self.filename) if self.filename is not None else None
+        recentFiles = []
+        for fname in self.recentFiles:
+            if fname != current and QFile.exists(fname):
+                recentFiles.append(fname)
+        if recentFiles:
+            self.fileMenu.addSeparator()
+            for i, fname in enumerate(recentFiles, 1):
+                action = QAction(QIcon(":/icon.png"),
+                                 "&{} {}".format(i,
+                                    QFileInfo(fname).fileName()), self)
+                action.setData(fname)
+                self.connect(action, SIGNAL("triggered()"), self.loadFile)
+                self.fileMenu.addAction(action)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.fileMenuActions[-1])
 
     def showImage(self):
         pass
 
     def loadInitialFile(self):
-        pass
+        settings = QSettings()
+        fname = settings.value("LastFile")
+        if fname and QFile.exists(fname):
+            self.loadFile(fname)
+
+    def closeEvent(self, event):
+        if self.okToContinue:
+            settings = QSettings()
+            settings.setValue("FileName", self.filename)
+            settings.setValue("RecentFiles", self.recentFiles or [])
+            settings.setValue("MainWindow/Geometry", self.saveGeometry())
+            settings.setValue("MainWindow/State", self.saveState())
+        else:
+            event.ignore()
+
+    def okToContinue(self):
+        if self.dirty:
+            reply = QMessageBox.question(self,
+                        "Image Changer - Unsaved Changes",
+                        "Save unsaved changes?",
+                        QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+            if reply == QMessageBox.Cancel:
+                return False
+            elif reply == QMessageBox.Yes:
+                return self.fileSave()
+            return True
+
 
 
 def main():
