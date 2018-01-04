@@ -167,8 +167,38 @@ class MainWindow(QMainWindow):
             action.setCheckable(True)
         return action
 
+    def addRecentFiles(self, fname):
+        if fname is None:
+            return
+        if not fname in self.recentFiles:
+            self.recentFiles = [fname] + self.recentFiles[:8]
+
     def fileNew(self):
-        pass
+        if not self.okToContinue():
+            return
+        dialog = newimagedlg.NewImageDlg(self)
+        if dialog.exec_():
+            self.addRecentFiles(self.filename)
+            self.image = QImage()   # null image
+            for action, check in self.resetableActions:
+                action.setChecked(check)
+            self.image = dialog.image()
+            self.filename = None
+            self.dirty = True
+            self.showImage()
+            self.sizeLabel.setText("{} x {}".format(self.image.width(), self.image.height()))
+            self.updateStatus("Created new image")
+
+    def updateStatus(self, message):
+        self.statusBar().showMessage(message, 5000)
+        self.listWidget.addItem(message)
+        if self.filename is not None:
+            self.setWindowTitle("Image Changer - {}[*]".format(os.path.basename(self.filename)))
+        elif not self.image.isNull():
+            self.setWindowTitle("Image Changer - Unnamed[*]")
+        else:
+            self.setWindowTitle("Image Changer[*]")
+        self.setWindowModified(self.dirty)
 
     def fileOpen(self):
         pass
@@ -204,7 +234,15 @@ class MainWindow(QMainWindow):
         pass
 
     def helpAbout(self):
-        pass
+        QMessageBox.about(self, "About Image Changer",
+                          """<p>Image Changer v. {}
+                          <p>Copyright &copy; 2007 Qtrac Ltd.
+                          All rights reserved.
+                          <p>This application can be used to perform
+                          simple image manipulations.
+                          <p>Python {} - Qt {} - PyQt {} on {}""".format(__version__,
+                            platform.python_version(), QT_VERSION_STR,
+                            PYQT_VERSION_STR, platform.system()))
 
     def helpHelp(self):
         pass
