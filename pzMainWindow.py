@@ -296,7 +296,7 @@ class MainWindow(QMainWindow):
                 return False
             elif reply == QMessageBox.Yes:
                 return self.fileSave()
-            return True
+        return True
 
 
 
